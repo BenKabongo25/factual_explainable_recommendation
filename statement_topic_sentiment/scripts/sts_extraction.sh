@@ -1,16 +1,3 @@
-#!/bin/bash
-
-#SBATCH --partition=hard
-#SBATCH --nodelist=top
-#SBATCH --gpus-per-node=1
-#SBATCH --time=2-00:00:00
-#SBATCH --job-name=sts_extraction
-#SBATCH --output=logs/sts_extraction.out
-#SBATCH --error=logs/sts_extraction.err
-
-eval "$(conda shell.bash hook)"
-conda activate genesis
-
 DATASET_NAME=$1
 PROMPT_NAME=${DATASET_NAME,,}
 BASE_DIR=/data/common/RecommendationDatasets/${DATASET_NAME}_Amazon14/topics/

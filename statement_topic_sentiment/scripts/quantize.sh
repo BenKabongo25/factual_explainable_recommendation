@@ -1,16 +1,3 @@
-#!/bin/bash
-
-#SBATCH --partition=hard
-#SBATCH --nodelist=top
-#SBATCH --gpus-per-node=1
-#SBATCH --time=2-00:00:00
-#SBATCH --job-name=quantize
-#SBATCH --output=logs/quantize.out
-#SBATCH --error=logs/quantize.err
-
-eval "$(conda shell.bash hook)"
-conda activate genesis
-
 DATASET_NAME=$1
 DATASET_DIR=/data/common/RecommendationDatasets/${DATASET_NAME}_Amazon14/topics
 EMBEDDING_MODEL=all-MiniLM-L6-v2
