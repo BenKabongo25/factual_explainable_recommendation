@@ -5,7 +5,12 @@
 import os
 import pandas as pd
 
-from evaluation.llm.create_files import predicted_statement_to_explanation_doc, ref_statement_to_explanation_gen_doc
+from evaluation.llm.create_files import (
+    predicted_statement_to_explanation_doc, # statement2explanation
+    ref_statement_to_explanation_gen_doc, # statement_ref2explanation_gen
+    predicted_statement_to_item_doc, # statement2item
+)
+from utils.statement_utils import read_sts
 from utils.text_generation_pipeline import get_parser, text_generation
 
 
@@ -70,18 +75,20 @@ def format_message(example, system_role=True):
 
 def main(config):
     if config.task == "statement2explanation":
+        print("Preparing data for statement2explanation task...")
         assert config.pred_data_path is not None, "pred_data_path is required for statement2explanation task"
         pred_data_df = pd.read_csv(config.pred_data_path)
         data_df = predicted_statement_to_explanation_doc(pred_data_df)
 
     elif config.task == "statement_ref2explanation_gen":
+        print("Preparing data for statement_ref2explanation_gen task...")
         assert config.ref_data_path is not None, "ref_data_path is required for statement_ref2explanation_gen task"
         assert config.pred_data_path is not None, "pred_data_path is required for statement_ref2explanation_gen task"
         assert config.sts_ref_path is not None, "sts_ref_path is required for statement_ref2explanation_gen task"
 
         ref_data_df = pd.read_csv(config.ref_data_path)
         pred_data_df = pd.read_csv(config.pred_data_path)
-        sts_ref_df = pd.read_csv(config.sts_ref_path)
+        sts_ref_df = read_sts(config.sts_ref_path)
 
         data_df = ref_statement_to_explanation_gen_doc(
             ref_data_df, pred_data_df, sts_ref_df
@@ -112,17 +119,10 @@ if __name__ == "__main__":
     parser = get_parser()
 
     parser.add_argument(
-        "--input_file",
-        type=str,
-        default="predicted_statements.csv",
-        help="Input CSV file containing predicted statements"
-    )
-
-    parser.add_argument(
         "--task",
         type=str,
         default="statement2explanation",
-        choices=["statement2explanation", "statement2doc"],
+        choices=["statement2explanation", "statement_ref2explanation_gen"],
         help=""
     )
 

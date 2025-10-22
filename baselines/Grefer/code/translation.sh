@@ -1,8 +1,3 @@
-#SBATCH --partition=hard
-#SBATCH --nodes=1
-#SBATCH --gpus-per-node=1
-#SBATCH --time=2-00:00:00
-
 DATASET_NAME="${1:-Beauty}"         # e.g., Beauty, Toys, Sports, Clothes, Cell
 SPLIT="${2:-train}"                 # "train", "eval" or "test"
 TEXT_ENCODER="${3:-SentenceBert}"   # "SentenceBert" or "SimCSE"

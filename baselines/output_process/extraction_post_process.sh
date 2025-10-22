@@ -1,14 +1,5 @@
-#!/bin/bash
-
-#SBATCH --partition=jazzy
-#SBATCH --time=2-00:00:00
-
-eval "$(conda shell.bash hook)"
-conda activate genesis
-
 DATASET_NAME=$1
 MODEL_NAME=$2
-
 OUTPUT_DIR=/data/common/RecommendationDatasets/exps/${MODEL_NAME}/${DATASET_NAME}
 
 PYTHONPATH=. python3 baselines/output_process/extraction_post_process.py \

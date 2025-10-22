@@ -1,23 +1,9 @@
-#!/bin/bash
-
-#SBATCH --partition=hard
-#SBATCH --nodes=1
-#SBATCH --gpus-per-node=1
-#SBATCH --time=2-00:00:00
-
-
 DATASET_NAME=$1
 DATA_DIR=/data/common/RecommendationDatasets/${DATASET_NAME}_Amazon14/
 MODEL=/data/common/llama3/Meta-Llama-3.1-8B-Instruct
 MODEL_NAME=llama3.1-8B-it
 OUTPUT_DIR=/data/common/RecommendationDatasets/exps/NL_profiles/${DATASET_NAME}
 METADATA_PATH=/data/common/RecommendationDatasets/${DATASET_NAME}_Amazon14/metadata.json
-
-eval "$(conda shell.bash hook)"
-conda activate genesis
-
-export http_proxy=http://"192.168.0.100":"3128"
-export https_proxy=http://"192.168.0.100":"3128"
 
 PYTHONPATH=. python baselines/NL_profiles/generate_item_summaries.py \
     --model ${MODEL} \

@@ -1,8 +1,10 @@
 #!/bin/bash
 
 JOB_SCRIPT="evaluation/llm/statement2doc.sh"
+TASK="statement2explanation"
+TASK_ABBR="s2e"
 
-LOG_DIR="logs/statement2doc"
+LOG_DIR="logs/${TASK}"
 mkdir -p "${LOG_DIR}"
 
 datasets=(Toys Clothes Beauty Sports Cell)
@@ -15,7 +17,7 @@ methods=(Att2Seq_explanation NRT_explanation CER_explanation PETER_explanation P
 for method in "${methods[@]}"; do
   for dataset in "${datasets[@]}"; do
     job_count=$((job_count + 1))
-    job_name="${method}_${dataset}"
+    job_name="${TASK_ABBR}_${method}_${dataset}"
     out_path="${LOG_DIR}/${job_name}.out"
     err_path="${LOG_DIR}/${job_name}.err"
       
@@ -23,9 +25,9 @@ for method in "${methods[@]}"; do
         -J "${job_name}" \
         -o "${out_path}" \
         -e "${err_path}" \
-        "${JOB_SCRIPT}" "${dataset}" "${method}")
+        "${JOB_SCRIPT}" "${dataset}" "${method}" "${TASK}")
       
-    echo "[$job_count] Submitted: dataset=${dataset} method=${method} jobid=${jid}"
+    echo "[$job_count] Submitted: dataset=${dataset} method=${method} task=${TASK} jobid=${jid}"
     echo "     logs: ${out_path} | ${err_path}"
   done
 done

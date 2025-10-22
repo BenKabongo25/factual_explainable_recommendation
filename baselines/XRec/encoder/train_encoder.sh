@@ -1,11 +1,3 @@
-#!/bin/bash
-
-#SBATCH --partition=electronic
-#SBATCH --nodes=1
-#SBATCH --gpus-per-node=1
-#SBATCH --time=2-00:00:00
-
-
 DATASET_NAME="${1:-Beauty}"           # ex: Beauty, Toys, Sports, ...
 MODEL="${2:-LightGCN}"                # ex: LightGCN
 N_EPOCHS="${3:-300}"

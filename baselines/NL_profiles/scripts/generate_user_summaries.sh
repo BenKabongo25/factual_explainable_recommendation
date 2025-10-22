@@ -1,11 +1,3 @@
-#!/bin/bash
-
-#SBATCH --partition=hard
-#SBATCH --nodes=1
-#SBATCH --gpus-per-node=1
-#SBATCH --time=2-00:00:00
-
-
 DATASET_NAME=$1
 DATA_DIR=/data/common/RecommendationDatasets/${DATASET_NAME}_Amazon14/
 MODEL=/data/common/llama3/Meta-Llama-3.1-8B-Instruct
