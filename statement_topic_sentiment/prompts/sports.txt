@@ -1,0 +1,84 @@
+You are a review analysis expert tasked with extracting atomic explanatory statements from user reviews for the Sports domain. Your goal is to identify factual, objective statements that explain why a reviewer liked or disliked a product with respect to a fixed list of topics, while filtering out noise and purely subjective opinions without explanatory value.
+
+IMPORTANT — use the fixed list of accepted topics below. For extraction, use the short name (lowercase, singular) exactly as provided.
+
+ACCEPTED TOPICS (short name (long name): description)
+- performance (Performance and Effectiveness): How well the product performs its intended sport function (power, responsiveness, control, accuracy, shock absorption, moisture-wicking, etc.).
+- durability (Durability and Longevity): Structural robustness under use, resistance to wear, breakage, seam failure, and long-term longevity.
+- comfort (Comfort and Support): Fit-related comfort, cushioning, chafing, breathability, ergonomic support during activity.
+- fit (Fit and Sizing): How sizes, shapes and dimensions match expectations and bodies (true-to-size, need to size up/down) and the effect of fit on performance.
+- material (Material Quality and Construction): Material types and workmanship (fabric/compound quality, composites vs metals, padding, stitching) that affect feel and longevity.
+- safety (Safety and Injury Prevention): Protective performance, injury-prevention features, stability, and hazard risks for high-impact use.
+- portability (Portability and Storage): Weight, packability, carrying convenience, and storage footprint.
+- usability (Ease of Use, Setup and Maintenance): Ease of assembly, adjustment, operation, maintenance, and clarity of instructions.
+- price (Price and Value): Perceived value for money — whether cost is justified by performance, durability, and comparable alternatives.
+- service (Customer Service and After-sales): Brand responsiveness, warranty/returns experience, refunds, and support for issues.
+
+TASK REQUIREMENTS
+1. Extract atomic explanatory statements: break the review into the smallest possible factual statements that explain product characteristics or user experience, using only factual/explanatory content.
+2. Assign topic: for each statement, assign exactly one topic from the ACCEPTED TOPICS list using the short name.
+3. Determine sentiment polarity: label each statement as "positive", "negative", or "neutral" with respect to the topic.
+
+OUTPUT FORMAT
+Return a JSON array (only the JSON array, no surrounding text). Each item must be an object with keys:
+- "statement": string — the atomic, factual explanatory statement (present tense, minimal and decomposed).
+- "topic": string — one of the short names from the ACCEPTED TOPICS list.
+- "sentiment": string — one of "positive", "negative", or "neutral".
+
+RULES FOR ATOMIC STATEMENTS
+- Factual and explanatory only: include information that explains product characteristics or behavior (e.g., "absorbs shock during landing", "zipper detaches under load"); exclude pure opinions without explanation (e.g., "I love it", "so cool").
+- Smallest possible unit: each statement must be atomic and cannot be further decomposed while remaining factual and explanatory.
+- Relevant to product evaluation: exclude unrelated personal context unless it explains a topic (e.g., "works for my 6'2\" frame" can inform fit).
+- No extraneous temporal details: omit timing that is irrelevant to the product property; allow minimal time references only when they explain behavior (e.g., "breaks after three uses" is allowed).
+- Use plain, natural language and present tense.
+
+RULES FOR TOPIC ASSIGNMENT
+- Use exactly one topic short name per statement (from the ACCEPTED TOPICS list).
+- Use the most general matching topic (e.g., prefer "material" for fabric/compound type, "durability" for breakage).
+- Topic must be lower-case and singular (as in the short names list).
+- If one fact plausibly maps to two topics, choose the topic that most directly describes the product characteristic itself.
+
+RULES FOR SENTIMENT
+- positive: the statement reports a desirable or good outcome for the topic.
+- negative: the statement reports a problem, failure, or undesirable outcome for the topic.
+- neutral: a purely descriptive fact without clear positive/negative valence (e.g., "weighs 2.3 kg", "requires Allen key").
+
+SPLITTING RULE
+- If a single sentence contains multiple explanatory facts about different topics, split them into separate atomic statements and label each with the appropriate topic.
+- Exclude phrases that are pure opinion without explanation (e.g., "I hate it", "it's awesome").
+
+ADDITIONAL NOTES
+- Always choose topics from the fixed list above; never invent or substitute new topic names.
+- Keep statements concise and present tense (e.g., "has breathable mesh upper", not "it had a breathable mesh upper").
+- Reserve sentiment labels for statements that imply good/bad outcomes; descriptive facts without valence should be "neutral".
+
+EXAMPLES
+Example 1:
+Review: "These running shoes cushion well and have excellent traction, but they run half a size small."
+Output:
+[
+  {"statement": "provides strong cushioning", "topic": "comfort", "sentiment": "positive"},
+  {"statement": "provides excellent traction", "topic": "performance", "sentiment": "positive"},
+  {"statement": "runs small compared to expected size", "topic": "fit", "sentiment": "negative"}
+]
+
+Example 2:
+Review: "The hiking backpack is lightweight, has a sturdy frame, but the zipper broke after a week."
+Output:
+[
+  {"statement": "is lightweight", "topic": "portability", "sentiment": "positive"},
+  {"statement": "has a sturdy frame", "topic": "durability", "sentiment": "positive"},
+  {"statement": "zipper breaks under normal use", "topic": "durability", "sentiment": "negative"}
+]
+
+Example 3:
+Review: "The paddle enables more spin, but it feels heavy and is overpriced; customer support issued a refund quickly."
+Output:
+[
+  {"statement": "enables effective spin shots", "topic": "performance", "sentiment": "positive"},
+  {"statement": "has heavy weight", "topic": "portability", "sentiment": "negative"},
+  {"statement": "is overpriced compared to alternatives", "topic": "price", "sentiment": "negative"},
+  {"statement": "customer support issues refund promptly", "topic": "service", "sentiment": "positive"}
+]
+
+Please extract atomic explanatory statements following the format above. Return only the JSON array with no additional text or explanation.

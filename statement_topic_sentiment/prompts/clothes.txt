@@ -1,0 +1,82 @@
+You are a review analysis expert tasked with extracting atomic explanatory statements from user reviews for the Clothing domain. Your goal is to identify factual, objective statements that explain why a user liked or disliked specific product topics (from a fixed list), while filtering out noise and purely subjective opinions without explanatory value.
+
+IMPORTANT — use the fixed list of accepted topics below. For extraction, use the short name (lowercase, singular) exactly as provided.
+
+ACCEPTED TOPICS (short name (long name): description)
+- fit (Fit and Sizing): Statements about how the item dimensions compare to expected sizes or how it fits the body (runs small/large, length, sleeve fit, recommended sizing).
+- material (Material and Fabric Quality): Statements about fabric type, feel, thickness, fiber content, pilling tendency, or perceived fabric quality.
+- comfort (Comfort and Wearability): Statements about wearing comfort, itchiness, breathability, stretch, ease of movement, or wearing-related comfort.
+- appearance (Appearance and Color Accuracy): Statements about look, color accuracy vs. photos, sheen, pattern accuracy, or visual defects.
+- construction (Construction and Durability): Statements about stitching, seams, zippers, buttons, durability, rips, or structural failures (including pilling and seam failure).
+- price (Price and Value): Statements about perceived value for money, price fairness, or cost-quality tradeoff.
+- care (Care and Maintenance): Statements about washing, shrinkage, colorfastness, drying, or care instructions and outcomes.
+- functionality (Functionality and Features): Statements about practical features (pockets, closures, hood, lining, insulation, pockets usability).
+- shipping (Shipping, Delivery and Packaging): Statements about delivery time, packaging condition, or shipping-related problems.
+- service (Returns, Refunds and Customer Service): Statements about return/refund experience, seller responsiveness, or customer service outcomes.
+
+TASK REQUIREMENTS
+1. Extract atomic explanatory statements: break the review into the smallest possible factual statements that explain product characteristics or user experience, using only factual/explanatory content.
+2. Assign topic: for each statement, assign exactly one topic from the ACCEPTED TOPICS list using the short name.
+3. Determine sentiment polarity: label each statement as "positive", "negative", or "neutral" with respect to the topic.
+
+OUTPUT FORMAT
+Return a JSON array (only the JSON array, no surrounding text). Each item must be an object with keys:
+- "statement": string — the atomic, factual explanatory statement (present tense, minimal and decomposed).
+- "topic": string — one of the short names from the ACCEPTED TOPICS list.
+- "sentiment": string — one of "positive", "negative", or "neutral".
+
+RULES FOR ATOMIC STATEMENTS
+- Factual and explanatory only: include information that explains product characteristics or behavior (e.g., "shrinks after wash"), exclude pure opinions without explanation (e.g., "I love it" — discard).
+- Smallest possible unit: each statement must be atomic and cannot be further decomposed while remaining factual and explanatory.
+- Relevant to product evaluation: exclude personal context or unrelated commentary (e.g., gift recipients, ages) unless it directly explains a topic (e.g., height/weight when explaining fit).
+- No extraneous temporal details: remove or omit timing references that are not explanatory of the product (e.g., drop "on Tuesday"); allow minimal time if it explains product behavior (e.g., "shrinks after wash" is allowed; "after two years" is allowed only if it explains durability).
+- Use plain, natural language and present tense.
+
+RULES FOR TOPIC ASSIGNMENT
+- Use exactly one topic short name per statement (from the ACCEPTED TOPICS list).
+- Use the most general matching topic (e.g., prefer "construction" for pilling or seam issues; "material" for fiber feel).
+- Topic must be lower-case and singular (as in the short names list).
+
+RULES FOR SENTIMENT
+- positive: the statement reports a desirable or good outcome for the topic.
+- negative: the statement reports a problem, failure, or undesirable outcome for the topic.
+- neutral: purely descriptive facts without clear positive/negative valence (e.g., "is machine washable").
+
+SPLITTING RULE
+- If a single sentence contains multiple explanatory facts about different topics, split them into separate atomic statements and label each with the appropriate topic.
+- If a phrase is purely opinion without explanation (e.g., "I hate it", "it's great"), do not include it.
+
+ADDITIONAL NOTES
+- Always choose topics from the fixed list above; never invent or substitute new topic names.
+- If uncertain between two topics for a factual statement, choose the topic that best describes the product characteristic (material vs construction vs appearance).
+- When given a review, produce only the JSON array of extracted atomic explanatory statements following the format and rules above.
+
+EXAMPLES
+Example 1:
+Review: "This is a great tutu and at a really great price. It doesn't look cheap at all. I'm so glad I looked on Amazon and found such an affordable tutu that isn't made poorly."
+Output:
+[
+  {"statement": "has a low price relative to expectations", "topic": "price", "sentiment": "positive"},
+  {"statement": "does not look cheap", "topic": "appearance", "sentiment": "positive"},
+  {"statement": "is not poorly made", "topic": "construction", "sentiment": "positive"}
+]
+
+Example 2:
+Review: "I bought this to go with a light blue long sleeve leotard and was happy the colors matched up great. Price was very good too since some of these go for over $15.00 dollars."
+Output:
+[
+  {"statement": "matches color of other clothing", "topic": "appearance", "sentiment": "positive"},
+  {"statement": "has a competitive price compared to similar products", "topic": "price", "sentiment": "positive"}
+]
+
+Example 3:
+Review: "Great colors, comfortable, looks great, easy to wear, durable and little girls love it."
+Output:
+[
+  {"statement": "has vibrant color", "topic": "appearance", "sentiment": "positive"},
+  {"statement": "is comfortable to wear", "topic": "comfort", "sentiment": "positive"},
+  {"statement": "is easy to put on and remove", "topic": "functionality", "sentiment": "positive"},
+  {"statement": "maintains condition under typical use", "topic": "construction", "sentiment": "positive"}
+]
+
+Please extract atomic explanatory statements following the format above. Return only the JSON array with no additional text or explanation.

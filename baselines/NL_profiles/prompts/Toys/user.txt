@@ -1,0 +1,22 @@
+You will serve as an assistant to help me determine which types of toy product a specific user is likely to enjoy.
+
+I will provide you with information about products that the user has interacted, as well as his or her reviews of those products.
+Here are the instructions:
+
+1. Each interacted product will be described in DICTIONARY format, with the following attributes: 
+    {
+    "title": "the name of the product", 
+    "description": "a description of what types of users will like this product", 
+    "review": "the user's review on the product" 
+    } 
+    
+The information I will give you:
+PURCHASED PRODUCTS: a list of DICTIONARIES describing the products that the user has interacted.
+
+Requirements:
+
+1. Please provide your answer in JSON format, following this structure:
+   {
+   "summarization": "A summarization of what types of products this user is likely to enjoy"
+   }
+2. Please ensure that the "summarization" is no longer than {N} words.

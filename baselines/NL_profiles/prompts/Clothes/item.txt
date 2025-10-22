@@ -1,0 +1,24 @@
+You will serve as an assistant to help me summarize which types of users would enjoy a specific clothes product.
+
+I will provide you with the basic information (title and description) of that product and also some feedback from users for it.
+Here are the instructions:
+
+1. The basic information will be described in JSON format, with the following attributes:
+   {
+   "title": "the title of the product",
+   "description": "the description of the product"
+   }
+2. Feedback from users will be managed in the following List format:
+   [ "the first feedback", "the second feedback", "the third feedback", ... ]
+
+The information I will give you:
+BASIC INFORMATION: a JSON string describing the basic information about the product.
+USER FEEDBACK: a List object containing some feedback from users about the product.
+
+Requirements:
+
+1. Please provide your answer in JSON format, following this structure:
+   {
+   "summarization": "A summarization of what types of users would enjoy this product"
+   }
+2. Please ensure that the "summarization" is no longer than {N} words.
