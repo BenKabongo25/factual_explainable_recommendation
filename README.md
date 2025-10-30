@@ -11,6 +11,8 @@ This repository provides a comprehensive framework for evaluating the **factual 
 
 Text-based explainable recommendation aims to generate natural-language explanations that justify item recommendations. While recent models produce fluent outputs, this work reveals a critical gap: **high surface-level quality doesn't guarantee factual accuracy**. We introduce a framework to evaluate factual consistency at the statement level and show that state-of-the-art models exhibit substantial hallucination, with precision ranging from 4.38% to 32.88%.
 
+![](assets/teaser.png)
+
 ---
 
 ## 🗂️ Repository Structure
