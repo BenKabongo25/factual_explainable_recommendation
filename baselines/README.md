@@ -2,16 +2,17 @@
 
 This folder collects the **reference implementations** we use to benchmark text-based explainable recommendation models.
 
-> * RNN-based models: **Att2Seq**, **NRT**
-> * Transformer-based models: **PETER**, **CER**, **PEPLER**
-> * LLM-enhanced model: **XRec** (LightGCN encoder + LLM explainer)
+* RNN-based models: **Att2Seq**, **NRT**
+* Transformer-based models: **PETER**, **CER**, **PEPLER**
+* LLM-enhanced model: **XRec** (LightGCN encoder + LLM explainer)
 
 ---
 
 ### Att2Seq
 
 **GitHub**: [https://github.com/lileipisces/Att2Seq](https://github.com/lileipisces/Att2Seq)
-**Paper**: *Learning to Generate Product Reviews from Attributes.*
+
+**Paper**: [*Learning to Generate Product Reviews from Attributes.*](https://aclanthology.org/E17-1059/)
 
 ```bash
 PYTHONPATH=. python3 baselines/Att2Seq/main.py \
@@ -36,7 +37,8 @@ PYTHONPATH=. python3 baselines/Att2Seq/main.py \
 ### NRT
 
 **GitHub**: [https://github.com/lileipisces/NRT](https://github.com/lileipisces/NRT)
-**Paper**: *Neural Rating Regression with Abstractive Tips Generation for Recommendation.*
+
+**Paper**: [*Neural Rating Regression with Abstractive Tips Generation for Recommendation.*](https://arxiv.org/abs/1708.00154)
 
 ```bash
 PYTHONPATH=. python3 baselines/NRT/main.py \
@@ -62,7 +64,8 @@ PYTHONPATH=. python3 baselines/NRT/main.py \
 ### CER
 
 **GitHub**: [https://github.com/JMRaczynski/CER](https://github.com/JMRaczynski/CER)
-**Paper**: *The Problem of Coherence in Natural Language Explanations of Recommendations.*
+
+**Paper**: [*The Problem of Coherence in Natural Language Explanations of Recommendations.*](https://arxiv.org/abs/2312.11356)
 
 ```bash
 PYTHONPATH=. python3 baselines/CER/main.py \
@@ -94,8 +97,9 @@ PYTHONPATH=. python3 baselines/CER/main.py \
 
 ### PETER
 
-**GitHub**: [https://github.com/lileipisces/PETER?tab=readme-ov-file](https://github.com/lileipisces/PETER?tab=readme-ov-file)
-**Paper**: *Personalized Transformer for Explainable Recommendation.*
+**GitHub**: [https://github.com/lileipisces/PETER](https://github.com/lileipisces/PETER)
+
+**Paper**: [*Personalized Transformer for Explainable Recommendation.*](https://arxiv.org/abs/2105.11601)
 
 ```bash
 PYTHONPATH=. python3 baselines/PETER/main.py \
@@ -128,7 +132,8 @@ PYTHONPATH=. python3 baselines/PETER/main.py \
 ### PEPLER
 
 **GitHub**: [https://github.com/lileipisces/PEPLER](https://github.com/lileipisces/PEPLER)
-**Paper**: *Personalized Prompt Learning for Explainable Recommendation.*
+
+**Paper**: [*Personalized Prompt Learning for Explainable Recommendation.*](https://arxiv.org/abs/2202.07371)
 
 ```bash
 PYTHONPATH=. python3 baselines/PEPLER/main.py \
@@ -147,7 +152,8 @@ PYTHONPATH=. python3 baselines/PEPLER/main.py \
 ### XRec
 
 **GitHub**: [https://github.com/HKUDS/XRec](https://github.com/HKUDS/XRec)
-**Paper**: *Large Language Models for Explainable Recommendation.*
+
+**Paper**: [*Large Language Models for Explainable Recommendation.*](https://arxiv.org/abs/2406.02377)
 
 #### 1) NL Profiles (Items)
 
@@ -233,5 +239,3 @@ PYTHONPATH=. python3 encoder/train_encoder.py \
   --n_layers "${N_LAYERS}" \
   --embedding_dim "${EMBEDDING_DIM}"
 ```
-
----

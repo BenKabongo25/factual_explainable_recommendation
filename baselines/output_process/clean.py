@@ -1,6 +1,7 @@
 # Ben Kabongo
 # October 2025
 
+
 import argparse
 import pandas as pd
 import re
@@ -21,7 +22,6 @@ INVISIBLE_CHARS = [
     '\u00ad',               # soft hyphen
 ]
 
-# Regex helpers
 RE_MULTI_SPACE   = re.compile(r'[ \t]{2,}')
 RE_MULTI_PUNCT   = re.compile(r'([,.!?])\1{1,}')      # "!!" -> "!"
 RE_SPACE_PUNCT   = re.compile(r'\s+([,.!?;:])')       # "word ," -> "word,"
@@ -29,7 +29,6 @@ RE_PUNCT_SPACE   = re.compile(r'([,.!?;:])([^\s])')   # "word,word" -> "word, wo
 RE_SENT_SPLIT    = re.compile(r'(?<=[\.\?!])\s+|\n+') # split on end punctuation or newlines
 RE_ORPHAN_BRACKS = re.compile(r'(?:(?<=\s)|^)[\[\]]+(?=\s|$)')
 
-# Clause separators (used only for exact-duplicate collapse, not deletion)
 CLAUSE_SEPS = [', and ', '; and ', ' and ',
                ', but ', '; but ', ' but ',
                ', however, ', '; however, ']
@@ -63,10 +62,8 @@ def remove_artifacts(text: str) -> str:
     return normalize_whitespace_and_punct(text)
 
 def sentence_key(s: str) -> str:
-    # Key for exact-duplicate detection: lowercase, collapse spaces, strip trivial punct
     k = nfkc(s).lower().strip()
     k = re.sub(r'\s+', ' ', k)
-    # keep punctuation minimal in key to avoid false diffs due to commas/periods
     k = re.sub(r'[,.!?;:]+', '', k)
     return k
 
@@ -83,16 +80,13 @@ def dedupe_exact(items: List[str]) -> List[str]:
     return out
 
 def split_sentences(text: str) -> List[str]:
-    # Split on sentence boundaries OR line breaks; keep order
     parts = [p.strip() for p in RE_SENT_SPLIT.split(text)]
-    return [p for p in parts if p]  # do not drop short ones; just remove pure empties
+    return [p for p in parts if p]
 
 def split_clauses_once(sentence: str):
-    # Find the first matching separator appearing in the sentence, prefer longer tokens
     for sep in sorted(CLAUSE_SEPS, key=len, reverse=True):
         if sep in sentence:
             return [p.strip() for p in sentence.split(sep)], sep
-    # fallback: split on comma only for dedupe; we will re-join with ", "
     return [p.strip() for p in sentence.split(',')], ', '
 
 def dedupe_clauses_in_sentence(sentence: str) -> str:
@@ -119,17 +113,13 @@ def clean_prediction(text: str) -> str:
         return ""
 
     sentences = split_sentences(text)
-
-    # Collapse exact duplicate sentences (keep first)
     sentences = dedupe_exact(sentences)
 
-    # For each sentence, collapse exact duplicate clauses (keep first)
     cleaned_sents: List[str] = []
     for s in sentences:
         s2 = dedupe_clauses_in_sentence(s)
         cleaned_sents.append(s2)
 
-    # Final tidy (spacing/punct), but no forced trailing punctuation
     out = ' '.join(cleaned_sents)
     out = normalize_whitespace_and_punct(out)
     return out
@@ -138,7 +128,6 @@ def process_file(infile: str, outfile: str, col: str = "prediction"):
     df = pd.read_csv(infile)
     if col not in df.columns:
         raise ValueError(f"Column '{col}' not found in {infile}. Available columns: {list(df.columns)}")
-    # Map clean function WITHOUT dropping any row
     df[col] = df[col].astype(str).map(clean_prediction)
     df.to_csv(outfile, index=False)
     print(f"[OK] Cleaned {len(df)} rows -> {outfile}")
