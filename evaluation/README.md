@@ -61,19 +61,6 @@ PYTHONPATH=. python evaluation/llm/compute_mectrics.py \
     --output_path ${BASELINE_DIR}/llm_metrics.json \
 ```
 
-**Statement-to-Explanation Precision** `St2Exp-P` measures the factual consistency of the generated explanation $\mathbf{e}'$ with respect to the ground-truth $\mathbf{e}$ at statement level.
-Given $n$ statements $\{\mathbf{s}'_1,\ldots,\mathbf{s}'_n\}$ extracted from $\mathbf{e}'$, we score each statement against the ground-truth: $s'_k = f_{\mathrm{LLM}}(\mathbf{s}'_k, \mathbf{e})$.
-The metric is the fraction of positively supported statements, given by:
-$$\texttt{St2Exp-P}(\mathbf{e}', \mathbf{e}) = \frac{1}{n} \sum_{k=1}^{n} s'_k \;=\; \frac{1}{n} \sum_{k=1}^{n} f_{\mathrm{LLM}}(\mathbf{s}'_k, \mathbf{e}).$$
-
-**Statement-to-Explanation Recall** `St2Exp-R` swaps the roles of $\mathbf{e}'$ and $\mathbf{e}$, thus measuring how well the generated explanation covers the reference’s explanatory content.
-Given $m$ statements $\{\mathbf{s}_1,\ldots,\mathbf{s}_m\}$ extracted from $\mathbf{e}$, each statement is scored against the prediction: $s_l = f_{\mathrm{LLM}}(\mathbf{s}_l, \mathbf{e}')$.
-The metric is given by:
-$$\texttt{St2Exp-R}(\mathbf{e}', \mathbf{e}) = \frac{1}{m} \sum_{l=1}^{m} s_l \;=\; \frac{1}{m} \sum_{l=1}^{m} f_{\mathrm{LLM}}(\mathbf{s}_l, \mathbf{e}').$$
-
-**Statement-to-Explanation F1** `St2Exp-F1` is the harmonic mean of precision and recall, computed as:
-$$\texttt{St2Exp-F1} \;=\;2\; \frac{\,\texttt{St2Exp-P}\cdot \texttt{St2Exp-R}}{\texttt{St2Exp-P} + \texttt{St2Exp-R}}.$$
-
 ___
 
 ## NLI-based Metrics
@@ -110,23 +97,6 @@ PYTHONPATH=. python evaluation/nli/compute_metrics.py \
   --input_path ${BASELINE_DIR}/{NLI_MODEL_NAME}_all.csv
   --output_path ${BASELINE_DIR}/nli_metrics.json \
 ```
-
-**Precision-oriented metrics**
-These metrics measure the factual consistency of the generated explanation $\mathbf{e}'$ with respect to the ground-truth $\mathbf{e}$:
-$$\texttt{St*-P}(\mathbf{e}', \mathbf{e}) \;=\; \frac{1}{n} \sum_{k=1}^{n} \max_{l}\, f_{\mathrm{NLI\text{-}*}}(\mathbf{s}'_k, \mathbf{s}_l),$$
-where $*$ indexes the chosen scoring function.
-This yields `StEnt-P` (entailment score), `StEnt-bin-P` (binary entailment), and `StCoh-P` (entailment minus contradiction).
-
-**Recall-oriented metrics**
-As with the LLM family, recall metrics swap the roles of $\mathbf{e}'$ and $\mathbf{e}$ to assess coverage:
-$$\texttt{St*-R}(\mathbf{e}', \mathbf{e}) \;=\; \frac{1}{m} \sum_{l=1}^{m} \max_{k}\, f_{\mathrm{NLI\text{-}*}}(\mathbf{s}_l, \mathbf{s}'_k).$$
-This gives `StEnt-R`, `StEnt-bin-R`, and `StCoh-R`.
-
-**Aggregated metrics**
-From precision and recall we compute F1:
-$$\texttt{St*-F1} \;=\; \frac{2\,\texttt{St*-P}\cdot\texttt{St*-R}}{\texttt{St*-P} + \texttt{St*-R}},$$
-yielding `StEnt-F1` and `tEnt-bin-F1`.
-
 ___
 
 ## Standard NLI and QG-QA Metrics

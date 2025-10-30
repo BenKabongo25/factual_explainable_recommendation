@@ -1,6 +1,6 @@
 # Statement-Topic-Sentiment Extraction (STS)
 
-![](assets/statement_topic_sentiment.drawio.png)
+![](../assets/statement_topic_sentiment.drawio.png)
 
 Atomic explanatory statements from product reviews — with topic taxonomy and sentiment labels.
 Convert raw reviews into **fine-grained atomic statements** labeled with a **domain-specific topic** and **sentiment**.
