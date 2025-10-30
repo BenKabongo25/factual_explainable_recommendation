@@ -8,7 +8,7 @@ import pandas as pd
 from evaluation.llm.create_files import (
     predicted_statement_to_explanation_doc, # statement2explanation
     ref_statement_to_explanation_gen_doc, # statement_ref2explanation_gen
-    predicted_statement_to_item_doc, # statement2item
+    predicted_statement_to_item_doc, # statement2item_chunk
 )
 from utils.statement_utils import read_sts
 from utils.text_generation_pipeline import get_parser, text_generation
@@ -73,18 +73,44 @@ def format_message(example, system_role=True):
     return example
 
 
+def check_needs(config):
+    _need_pred_data = config.task in [
+        "statement2explanation",
+        "statement_ref2explanation_gen",
+        "statement2item_chunk",
+    ]
+    if _need_pred_data:
+        assert config.pred_data_path is not None, "pred_data_path is required"
+
+    _need_ref_data = config.task in [
+        "statement_ref2explanation_gen",
+        "statement2item_chunk",
+    ]
+    if _need_ref_data:
+        assert config.ref_data_path is not None, "ref_data_path is required"
+
+    _need_sts_ref = config.task in [
+        "statement_ref2explanation_gen",
+        "statement2item_chunk",
+    ]
+    if _need_sts_ref:
+        assert config.sts_ref_path is not None, "sts_ref_path is required"
+
+    _need_item_metadata = config.task == "statement2item_chunk"
+    if _need_item_metadata:
+        assert config.item_metadata_path, "item_metadata_path is required"
+
+
 def main(config):
+    check_needs(config)
+
     if config.task == "statement2explanation":
         print("Preparing data for statement2explanation task...")
-        assert config.pred_data_path is not None, "pred_data_path is required for statement2explanation task"
         pred_data_df = pd.read_csv(config.pred_data_path)
         data_df = predicted_statement_to_explanation_doc(pred_data_df)
 
     elif config.task == "statement_ref2explanation_gen":
         print("Preparing data for statement_ref2explanation_gen task...")
-        assert config.ref_data_path is not None, "ref_data_path is required for statement_ref2explanation_gen task"
-        assert config.pred_data_path is not None, "pred_data_path is required for statement_ref2explanation_gen task"
-        assert config.sts_ref_path is not None, "sts_ref_path is required for statement_ref2explanation_gen task"
 
         ref_data_df = pd.read_csv(config.ref_data_path)
         pred_data_df = pd.read_csv(config.pred_data_path)
@@ -93,14 +119,48 @@ def main(config):
         data_df = ref_statement_to_explanation_gen_doc(
             ref_data_df, pred_data_df, sts_ref_df
         )
+
+    elif config.task == "statement2item_chunk":
+        print("Preparing data for statement2item_chunk task...")
+
+        ref_data_df = pd.read_csv(config.ref_data_path)
+        pred_data_df = pd.read_csv(config.pred_data_path)
+        sts_ref_df = read_sts(config.sts_ref_path)
+
+        data_dfs = []
+        for split in ["train", "eval", "test"]:
+            split_path = os.path.join(config.data_dir, f"{split}_data.csv")
+            split_df = pd.read_csv(split_path)
+            data_dfs.append(split_df)
+
+        item_document_path = os.path.join(config.data_dir, "item_documents.csv")
+        _item_document_df_already_exists = False
+        item_document_df = None
+        if os.path.exists(item_document_path):
+            item_document_df = pd.read_csv(item_document_path, index_col=0)
+            _item_document_df_already_exists = True
+
+        data_df, item_document_df = predicted_statement_to_item_doc(
+            pred_data_df,
+            ref_data_df,
+            sts_ref_df,
+            data_dfs,
+            config.item_metadata_path,
+            item_document_df
+        )
+
+        if not _item_document_df_already_exists:
+            item_document_df.to_csv(item_document_path, index=True)
+            print(f"Saved item documents to {item_document_path}")
+
     else:
         raise ValueError(f"Unknown task: {config.task}")
     
     print(data_df.head())
     print(f"Total examples for {config.task}: {len(data_df)}")
 
-    output_path = os.path.join(config.data_dir, f"{config.task}_labels.csv")
-    state_dict_path = os.path.join(config.data_dir, f"{config.task}_state_dict.json")
+    output_path = os.path.join(config.baseline_dir, f"{config.task}_labels.csv")
+    state_dict_path = os.path.join(config.baseline_dir, f"{config.task}_state_dict.json")
     keeped_keys = data_df.columns.tolist() + ["label"]
     text_generation(
         config=config,
@@ -122,10 +182,16 @@ if __name__ == "__main__":
         "--task",
         type=str,
         default="statement2explanation",
-        choices=["statement2explanation", "statement_ref2explanation_gen"],
-        help=""
+        choices=["statement2explanation", "statement_ref2explanation_gen", "statement2item_chunk"],
+        help="Task to perform"
     )
 
+    parser.add_argument(
+        "--baseline_dir",
+        type=str,
+        required=True,
+        help="Path to baseline directory to save outputs"
+    )
     parser.add_argument(
         "--sts_ref_path", 
         type=str, 
@@ -149,6 +215,13 @@ if __name__ == "__main__":
         type=str, 
         required=True, 
         help="Path to pred_data CSV (per-review; contains predicted statements or SIDs)"
+    )
+
+    parser.add_argument(
+        "--item_metadata_path", 
+        type=str, 
+        default=None,
+        help="Path to item metadata file (required for statement2item_chunk task)"
     )
 
     config = parser.parse_args()

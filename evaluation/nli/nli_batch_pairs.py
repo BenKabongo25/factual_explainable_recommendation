@@ -248,6 +248,7 @@ def run_nli_batch(
 def main(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"[INFO] Using device: {device}")
+    print(f"[INFO] Topic-sentiment matching: {args.topic_sentiment_match}")
 
     # Load statements
     print("[INFO] Loading statement repositories...")
@@ -276,9 +277,9 @@ def main(args):
     model.to(device)
     _ = build_label_order(model)  # validate labels
 
-    # Build all (topic, sentiment)-matched pairs across rows
+    # Build all matched pairs across rows
     # We'll accumulate meta + text for NLI in two directions.
-    print("[INFO] Building matched pairs (complete bipartite per row, same topic & sentiment)...")
+    print("[INFO] Building matched pairs (complete bipartite per row)...")
     pair_meta: List[Dict[str, Any]] = []
     pairs_pred_to_ref: List[Tuple[str, str]] = []  # (premise=p, hypothesis=r)
     pairs_ref_to_pred: List[Tuple[str, str]] = []  # (premise=r, hypothesis=p)
@@ -287,43 +288,45 @@ def main(args):
         ref_row = ref_df.iloc[i]
         pred_row = pred_df.iloc[i]
 
-        # Reference statements present in this review
         ref_items = build_ref_items_for_row(ref_row, ref_lookup)
-
-        # Predicted statements for this review
         pred_items = build_pred_items_for_row(pred_row, pred_lookup)
 
         if not ref_items or not pred_items:
             continue
 
-        # Form all pairs where topic & sentiment match
         for p in pred_items:
             for r in ref_items:
-                if (p["topic"] == r["topic"]) and (p["sentiment"] == r["sentiment"]):
-                    p_sent = as_explanation_sentence(p["statement"], p["sentiment"])
-                    r_sent = as_explanation_sentence(r["statement"], r["sentiment"])
 
-                    # Save meta
-                    meta = {
-                        "row_index": i,
-                        "user_id": ref_row.get("user_id", None),
-                        "item_id": ref_row.get("item_id", None),
-                        "topic": r["topic"],
-                        "sentiment": r["sentiment"],
-                        "ref_sid": r["ref_sid"],
-                        "pred_sid": p.get("pred_sid", None),
-                        "pred_local_id": p.get("pred_local_id", None),
-                        "pred_statement": p["statement"],
-                        "ref_statement": r["statement"],
-                        "pred_sentence": p_sent,
-                        "ref_sentence": r_sent,
-                    }
-                    pair_meta.append(meta)
-                    pairs_pred_to_ref.append((p_sent, r_sent))
-                    pairs_ref_to_pred.append((r_sent, p_sent))
+                if args.topic_sentiment_match:
+                    if not ((p["topic"] == r["topic"]) and (p["sentiment"] == r["sentiment"])):
+                        continue
+                    
+                p_sent = as_explanation_sentence(p["statement"], p["sentiment"])
+                r_sent = as_explanation_sentence(r["statement"], r["sentiment"])
+
+                # Save meta
+                meta = {
+                    "row_index": i,
+                    "user_id": ref_row.get("user_id", None),
+                    "item_id": ref_row.get("item_id", None),
+                    "pred_topic": p["topic"],
+                    "pred_sentiment": p["sentiment"],
+                    "ref_topic": r["topic"],
+                    "ref_sentiment": r["sentiment"],
+                    "ref_sid": r["ref_sid"],
+                    "pred_sid": p.get("pred_sid", None),
+                    "pred_local_id": p.get("pred_local_id", None),
+                    "pred_statement": p["statement"],
+                    "ref_statement": r["statement"],
+                    "pred_sentence": p_sent,
+                    "ref_sentence": r_sent,
+                }
+                pair_meta.append(meta)
+                pairs_pred_to_ref.append((p_sent, r_sent))
+                pairs_ref_to_pred.append((r_sent, p_sent))
 
     if not pair_meta:
-        print("[INFO] No (topic, sentiment)-matched pairs were found. Exiting.")
+        print("[INFO] No matched pairs were found. Exiting.")
         return
 
     print(f"[INFO] Total matched pairs: {len(pair_meta)}")
@@ -354,8 +357,10 @@ def main(args):
             "row_index": meta["row_index"],
             "user_id": meta["user_id"],
             "item_id": meta["item_id"],
-            "topic": meta["topic"],
-            "sentiment": meta["sentiment"],
+            "pred_topic": meta["pred_topic"],
+            "pred_sentiment": meta["pred_sentiment"],
+            "ref_topic": meta["ref_topic"],
+            "ref_sentiment": meta["ref_sentiment"],
 
             # ids
             "ref_sid": meta["ref_sid"],
@@ -388,18 +393,21 @@ def main(args):
     # Save next to pred_data
     pred_dir = os.path.dirname(os.path.abspath(args.pred_data_path))
     model_tag = os.path.basename(args.model_name).replace("/", "_")
-    out_path = os.path.join(pred_dir, f"nli_scores_{model_tag}.csv")
+    filename = f"nli_scores_{model_tag}.csv" if args.topic_sentiment_match else f"nli_scores_{model_tag}_all.csv"
+    out_path = os.path.join(pred_dir, filename)
     out_df.to_csv(out_path, index=False)
     print(f"[OK] Saved NLI scores to: {out_path}")
     print(f"[INFO] Rows: {len(out_df)}")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Batch NLI scoring for (topic, sentiment)-matched statement pairs.")
+    parser = argparse.ArgumentParser(description="Batch NLI scoring for statement pairs.")
     parser.add_argument("--sts_ref_path", type=str, required=True, help="Path to reference statements CSV")
     parser.add_argument("--sts_pred_path", type=str, required=True, help="Path to predicted statements CSV")
     parser.add_argument("--ref_data_path", type=str, required=True, help="Path to ref_data CSV (per-review; contains reference SIDs)")
     parser.add_argument("--pred_data_path", type=str, required=True, help="Path to pred_data CSV (per-review; contains predicted statements or SIDs)")
+    parser.add_argument("--topic_sentiment_match", action=argparse.BooleanOptionalAction, default=False,
+        help="Only compare statements with matching topic & sentiment")
     parser.add_argument("--model_name", type=str, default="microsoft/deberta-v3-large-mnli", help="HF model name or path for NLI")
     parser.add_argument("--batch_size", type=int, default=32, help="Batch size for NLI inference")
     parser.add_argument("--max_length", type=int, default=256, help="Max sequence length for tokenizer truncation")

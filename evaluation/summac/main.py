@@ -43,7 +43,7 @@ def main(args):
         models=["mnli-base"], 
         bins='percentile', 
         nli_labels="e", 
-        device="cpu", 
+        device=device, 
         start_file="default", 
         agg="mean"
     )

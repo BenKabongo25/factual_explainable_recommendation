@@ -1,8 +1,8 @@
 #!/bin/bash
 
 JOB_SCRIPT="evaluation/llm/statement2doc.sh"
-TASK="statement2explanation"
-TASK_ABBR="s2e"
+TASK="statement2item_chunk"
+TASK_ABBR="s2i"
 
 LOG_DIR="logs/${TASK}"
 mkdir -p "${LOG_DIR}"
