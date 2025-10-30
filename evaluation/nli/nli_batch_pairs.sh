@@ -1,13 +1,3 @@
-#!/bin/bash
-
-#SBATCH --partition=hard
-#SBATCH --nodes=1
-#SBATCH --gpus-per-node=1
-#SBATCH --time=2-00:00:00
-
-eval "$(conda shell.bash hook)"
-conda activate genesis
-
 DATASET_NAME=$1
 MODEL_NAME=$2
 DATASET_DIR=/data/common/RecommendationDatasets/${DATASET_NAME}_Amazon14/topics/

@@ -1,13 +1,3 @@
-#!/bin/bash
-
-#SBATCH --partition=hard
-#SBATCH --nodes=1
-#SBATCH --gpus-per-node=1
-#SBATCH --time=2-00:00:00
-
-eval "$(conda shell.bash hook)"
-conda activate genesis
-
 DATASET_NAME=$1
 BASELINE_NAME=$2
 TASK="${3:-statement2explanation}"
