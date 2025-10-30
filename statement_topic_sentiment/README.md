@@ -2,11 +2,8 @@
 
 ![](assets/statement_topic_sentiment.drawio.png)
 
-Atomic explanatory statements from product reviews — with topic taxonomy, sentiment labels, embeddings and quantization.
-
-> Convert raw reviews into **fine-grained atomic statements** labeled with a **domain-specific topic** and **sentiment**, then build **sentence embeddings** and **quantization** of paraphrases for downstream tasks (ABSA, ranking, scrutable recommendation, retrieval).
-
-## News
+Atomic explanatory statements from product reviews — with topic taxonomy and sentiment labels.
+Convert raw reviews into **fine-grained atomic statements** labeled with a **domain-specific topic** and **sentiment**.
 
 ## Domains & taxonomies
 
@@ -28,7 +25,7 @@ Each prompt file also specifies **atomicity rules**, **topic assignment rules**,
 
 ## Quick start (Toys example)
 
-### 1) Extract atomic statements (LLM)
+### Extract atomic statements (LLM)
 
 ```bash
 cd statement_topic_sentiment
@@ -44,32 +41,13 @@ PYTHONPATH=. python sts_extraction.py \
 
 **Input format:** JSON/CSV with a review text field (e.g., `review`). The script loads rows, prompts the LLM with the domain prompt, and writes **per-review JSON arrays** of atomic statements following the schema above (topics & examples defined in `toys.txt`).&#x20;
 
-### 2) Build statement embeddings
-
-**Before embedding:** generate `statement_topic_sentiment_freq.csv` from your raw extraction outputs using the **post-processing notebooks** (see the `notebooks/` directory). These notebooks show how to:
-
-* validate the schema (`statement`, `topic`, `sentiment`),
-* deduplicate statements and compute a `freq` column.
+### Build Explanation Ground-truth
 
 ```bash
-PYTHONPATH=. python embed.py \
-  --dataset_dir /path/to/topics \
-  --model_name all-MiniLM-L6-v2 \
-  --batch_size 32
-```
-
-This script then reads `statement_topic_sentiment_freq.csv`, encodes the **statement** column with Sentence-Transformers (L2-normalized), and saves `vectors/<model_name>/embeddings.pt`.
-
-
-### 3) Quantization
-
-```bash
-PYTHONPATH=. python quantize.py \
-    --embedding_path /path/to/embeddings.pt \
-    --sts_csv /path/to/statement_topic_sentiment_freq.csv \
-    --output_dir /path/to/rvq \
-    --epochs 10 --batch_size 4096 \
-    --codebook_size 32 --num_quantizers 3
+PYTHONPATH=. python build_explanations.py \
+    --data_csv ${DATASET_DIR}/${SPLIT}_data.csv \
+    --sts_csv ${DATASET_DIR}/sts.csv \
+    --output_csv ${DATASET_DIR}/${SPLIT}_explanations.csv \
 ```
 
 ---
@@ -120,23 +98,9 @@ PYTHONPATH=. python quantize.py \
 
 2. **Map your schema** so your review text is available as one field (e.g., `review`).
 
-3. **Run extraction** with `sts_extraction.py` using your prompt:
+3. **Run extraction** with `sts_extraction.py` using your prompt and your data.
 
-   ```bash
-   PYTHONPATH=. python main.py \
-     --model /path/to/instruct-model \
-     --prompt_text_file /path/to/your_domain_prompt.txt \
-     --dataset_path /path/to/reviews.json \
-     --output_dir /path/to/topics/ \
-     --batch_size 32 --max_new_tokens 512
-   ```
-
-   Verify that outputs are well-formed JSON arrays with keys `statement`, `topic`, `sentiment`.
-
-4. **Aggregate** (optional) statement counts into `statement_topic_sentiment_freq.csv` (required columns: `statement,topic,sentiment`; optional `freq`).
-
-5. **Run embeddings** and **quantization** to obtain vectors and quantization.
-
+4. **Build explanation ground-truth** with `build_explanations.py`using your data.
 ---
 
 ## Illustrative extraction examples
@@ -153,4 +117,3 @@ PYTHONPATH=. python quantize.py \
     {"statement": "wheels break during play", "topic": "durability", "sentiment": "negative"}
   ]
   ```
-
