@@ -1,4 +1,4 @@
-# Factual Explainable Recommendation
+# On the Factual Consistency of Text-based Explainable Recommendation Models
 
 This repository provides a comprehensive framework for evaluating the **factual consistency** of text-based explainable recommendation models. It includes statement-level evaluation metrics, augmented benchmark datasets, and baseline implementations.
 
@@ -17,10 +17,14 @@ Text-based explainable recommendation aims to generate natural-language explanat
 
 ```
 .
-├── baselines/              # Reference implementations & output processing
-├── data/                   # Augmented datasets (5 Amazon domains)
-├── evaluation/             # Evaluation metrics (LLM, NLI, QG-QA, text similarity)
-├── statement_topic_sentiment/  # Statement-Topic-Sentiment extraction pipeline
+├── baselines/                    # Reference implementations + helpers
+│   ├── Att2Seq/  CER/  NRT/      # RNN/Transformer baselines (train & module files)
+│   ├── PETER/  PEPLER/  XRec/    # Transformer & LLM-enhanced baselines
+│   ├── NL_profiles/              # User/item natural-language profile generation
+│   └── output_process/           # Clean → STS extraction → post-processing
+├── data/                         # Augmented datasets (schemas, loading tips)
+├── evaluation/                   # LLM + NLI + QG-QA + text-similarity metrics
+├── statement_topic_sentiment/    # STS extraction prompts & GT builder
 └── README.md
 ```
 
@@ -158,6 +162,8 @@ PYTHONPATH=. python evaluation/nli/nli_batch_pairs.py \
   --batch_size 64
 ```
 
+See [`evaluation/README.md`](evaluation/README.md) for details.
+
 ---
 
 ## 🔍 Key Findings
@@ -183,15 +189,3 @@ Our experiments reveal a **dramatic disconnect** between surface-level quality a
   year={2025}
 }
 ```
-
----
-
-## 📝 License
-
-This project is released under [appropriate license]. The augmented datasets are available under the same terms as the original Amazon Reviews dataset.
-
----
-
-## 🙏 Acknowledgments
-
-We build upon several excellent open-source projects. See individual baseline README files for specific attributions.
