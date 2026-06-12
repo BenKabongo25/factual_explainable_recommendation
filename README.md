@@ -182,10 +182,12 @@ Our experiments reveal a **dramatic disconnect** between surface-level quality a
 ## 📚 Citation
 
 ```bibtex
-@article{kabongo2025factual,
+@inproceedings{kabongo2026factual,
   title={On the Factual Consistency of Text-based Explainable Recommendation Models},
   author={Kabongo, Ben and Guigue, Vincent},
-  journal={arXiv preprint},
-  year={2025}
+  booktitle={Pacific-Asia Conference on Knowledge Discovery and Data Mining},
+  pages={16--28},
+  year={2026},
+  organization={Springer}
 }
 ```
